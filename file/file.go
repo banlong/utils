@@ -193,3 +193,13 @@ func IdGenerate(strlen int) string {
 	return string(result)
 }
 
+func PrintFile(path string) {
+	inFile, _ := os.Open(path)
+	defer inFile.Close()
+	scanner := bufio.NewScanner(inFile)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		log.Println(scanner.Text())
+	}
+}
