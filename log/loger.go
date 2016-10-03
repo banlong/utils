@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-type DebugLog struct {
+type Logger struct {
 	l1 *log.Logger
 	l2 *log.Logger
 	l3 *log.Logger
@@ -15,37 +15,37 @@ type DebugLog struct {
 	l3_prefix string
 }
 
-func NewDebugLog(displaylevel int, output ...io.Writer) *DebugLog {
+func NewLogger(displaylevel int, output ...io.Writer) *Logger {
 	if displaylevel > 3 || displaylevel < 0 {
-		return &DebugLog{
+		return &Logger{
 			l1: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 			l2: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 			l3: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 		}
 	}
 	multi := io.MultiWriter(output...)
-	retLogger := DebugLog{}
+	retLogger := Logger{}
 	switch displaylevel {
 	case 0:
-		retLogger =  DebugLog{
+		retLogger =  Logger{
 			l1: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 			l2: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 			l3: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 		}
 	case 1:
-		retLogger = DebugLog{
+		retLogger = Logger{
 			l1: log.New(multi,"", log.Ldate|log.Ltime),
 			l2: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 			l3: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 		}
 	case 2:
-		retLogger = DebugLog{
+		retLogger = Logger{
 			l1: log.New(multi,"", log.Ldate|log.Ltime),
 			l2: log.New(multi,"", log.Ldate|log.Ltime),
 			l3: log.New(ioutil.Discard,"", log.Ldate|log.Ltime),
 		}
 	case 3:
-		retLogger = DebugLog{
+		retLogger = Logger{
 			l1: log.New(multi,"", log.Ldate|log.Ltime),
 			l2: log.New(multi,"", log.Ldate|log.Ltime),
 			l3: log.New(multi,"", log.Ldate|log.Ltime),
@@ -55,32 +55,31 @@ func NewDebugLog(displaylevel int, output ...io.Writer) *DebugLog {
 	return  &retLogger
 }
 
-func (dl *DebugLog) SetL1Prefix(pf string)  {
-	dl.l1_prefix = pf
-}
 
-func (dl *DebugLog) SetL2Prefix(pf string)  {
-	dl.l2_prefix = pf
-}
+func (dl *Logger) Println(level int, input ...string) {
+	var prtStr = ""
+	for _, str := range input{
+		prtStr += str
+	}
 
-func (dl *DebugLog) SetL3Prefix(pf string)  {
-	dl.l3_prefix = pf
-}
-
-func (dl *DebugLog) Println(level int, input string) {
 	switch level {
 	case 1:
-		dl.l1.Println(dl.l1_prefix + input)
+		dl.l1.Println(dl.l1_prefix + prtStr)
 	case 2:
-		dl.l2.Println(dl.l2_prefix + input)
+		dl.l2.Println(dl.l2_prefix + prtStr)
 	case 3:
-		dl.l3.Println(dl.l3_prefix + input)
+		dl.l3.Println(dl.l3_prefix + prtStr)
 	default:
-		dl.l1.Println(dl.l1_prefix + input)
+		dl.l1.Println(dl.l1_prefix + prtStr)
 	}
 }
 
-func (dl *DebugLog) Print(level int, input string) {
+func (dl *Logger) Print(level int, data ...string) {
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Print(dl.l1_prefix + input)
@@ -93,7 +92,12 @@ func (dl *DebugLog) Print(level int, input string) {
 	}
 }
 
-func (dl *DebugLog) Printf(level int, input string) {
+func (dl *Logger) Printf(level int, data ...string) {
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Printf(dl.l1_prefix + input)
@@ -106,7 +110,12 @@ func (dl *DebugLog) Printf(level int, input string) {
 	}
 }
 
-func (dl *DebugLog) Fatal(level int, input string) {
+func (dl *Logger) Fatal(level int, data ...string) {
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Fatal(dl.l1_prefix + input)
@@ -119,7 +128,13 @@ func (dl *DebugLog) Fatal(level int, input string) {
 	}
 }
 
-func (dl *DebugLog) Fatalf(level int, input string) {
+func (dl *Logger) Fatalf(level int, data ...string) {
+
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Fatalf(dl.l1_prefix + input)
@@ -132,7 +147,12 @@ func (dl *DebugLog) Fatalf(level int, input string) {
 	}
 }
 
-func (dl *DebugLog) Fatalln(level int, input string) {
+func (dl *Logger) Fatalln(level int, data ...string) {
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Fatalln(dl.l1_prefix + input)
@@ -145,7 +165,12 @@ func (dl *DebugLog) Fatalln(level int, input string) {
 	}
 }
 
-func (dl *DebugLog) Panic(level int, input string) {
+func (dl *Logger) Panic(level int, data ...string) {
+	var input = ""
+	for _, str := range data{
+		input += str
+	}
+
 	switch level {
 	case 1:
 		dl.l1.Panic(dl.l1_prefix + input)
@@ -159,7 +184,7 @@ func (dl *DebugLog) Panic(level int, input string) {
 }
 
 //flag can be log.Ldate|log.Ltime|log.Llongfile | log.Lshortfile | log.Lmicroseconds
-func (dl *DebugLog) SetFlags(level int, flag int) {
+func (dl *Logger) SetFlags(level int, flag int) {
 	switch level {
 	case 1:
 		dl.l1.SetFlags(flag)
@@ -174,7 +199,8 @@ func (dl *DebugLog) SetFlags(level int, flag int) {
 	}
 }
 
-func (dl *DebugLog) SetPrefix(level int, pf string) {
+//This prefix is add before the flag --> left most of the log
+func (dl *Logger) SetPrefix(level int, pf string) {
 	switch level {
 	case 1:
 		dl.l1.SetPrefix(pf)
@@ -190,7 +216,7 @@ func (dl *DebugLog) SetPrefix(level int, pf string) {
 }
 
 //level value other than 1-3 mean "all level"
-func (dl *DebugLog) SetOutput(level int, w ...io.Writer) {
+func (dl *Logger) SetOutput(level int, w ...io.Writer) {
 	multi := io.MultiWriter(w...)
 	switch level {
 	case 1:
@@ -205,4 +231,17 @@ func (dl *DebugLog) SetOutput(level int, w ...io.Writer) {
 		dl.l3.SetOutput(multi)
 	}
 
+}
+
+//Append a string in front of the input string of println
+func (dl *Logger) SetL1StringPrefix(pf string)  {
+	dl.l1_prefix = pf
+}
+
+func (dl *Logger) SetL2StringPrefix(pf string)  {
+	dl.l2_prefix = pf
+}
+
+func (dl *Logger) SetL3StringPrefix(pf string)  {
+	dl.l3_prefix = pf
 }
