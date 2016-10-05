@@ -5,6 +5,7 @@ import (
 import (
 	"utils/logger"
 	"os"
+	"utils/alias"
 )
 
 var(
@@ -12,7 +13,8 @@ var(
 )
 
 func main() {
-	testTrace()
+	//testTrace()
+	alias.TestFunction()
 }
 
 func testTrace()  {
@@ -29,3 +31,7 @@ func testTrace()  {
 	Trace.Println(2, "This is level 2")
 	Trace.Println(3, "This is level 3")
 }
+
+
+
+
