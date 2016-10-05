@@ -5,16 +5,17 @@ import (
 import (
 	"utils/logger"
 	"os"
-	"utils/alias"
 )
 
 var(
 	Trace = logger.NewTracer(3, os.Stdout)
+	terminal = os.Stdout
+	errorStd = os.Stderr
 )
 
 func main() {
-	//testTrace()
-	alias.TestFunction()
+	testTrace()
+	//alias.TestFunction()
 }
 
 func testTrace()  {
@@ -23,10 +24,10 @@ func testTrace()  {
 		Trace.Fatal(4, "Failed to open log file",  err.Error())
 	}
 
-	Trace.SetL1StringPrefix(".")
-	Trace.SetL2StringPrefix("..")
-	Trace.SetL3StringPrefix("...")
-	Trace.SetOutput(4, file)
+	Trace.SetStringPrefix(1, ".")
+	Trace.SetStringPrefix(2, "..")
+	Trace.SetStringPrefix(3, "...")
+	Trace.SetOutput(4, file, terminal)
 	Trace.Println(1, "This is level 1")
 	Trace.Println(2, "This is level 2")
 	Trace.Println(3, "This is level 3")

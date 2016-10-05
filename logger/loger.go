@@ -258,6 +258,22 @@ func (dl *Tracer) SetOutput(level int, w ...io.Writer) {
 		dl.SetL3StringPrefix(strPrefix3)
 	}
 }
+func (dl *Tracer) SetStringPrefix(level int, pf string)  {
+	switch level {
+	case 1:
+		dl.l1_prefix = pf
+		break
+	case 2:
+		dl.l2_prefix = pf
+		break
+	case 3:
+		dl.l3_prefix = pf
+	default:
+		dl.l1_prefix = pf
+		dl.l2_prefix = pf
+		dl.l3_prefix = pf
+	}
+}
 
 //Append a string in front of the input string of println
 func (dl *Tracer) SetL1StringPrefix(pf string)  {

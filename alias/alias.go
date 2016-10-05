@@ -9,7 +9,9 @@ type MyInt int
 type MyMap map[int]int
 
 type MySlice []int
-type MyFunc func(int)
+
+type MyConvertFunc func(int) string
+
 //var i int = 2
 //var i2 MyInt = 4
 //i = i2			//cannot use i2 (type MyInt) as type int in assignment
@@ -58,15 +60,12 @@ func printSlice(input MySlice){
 	}
 }
 
-func TestFunction()  {
-	f := func(i int) {
-		fmt.Println("input val:", i)
-	}
+//func TestFunction()  {
+//	result := quote123(123)
+//	fmt.Println(result)
+//}
+//
+//func quote123(fn MyConvertFunc) string {
+//	return fmt.Sprintf("%q", fn(123))
+//}
 
-	execFunc(f)
-}
-
-
-func execFunc(input MyFunc) int{
-	return input
-}
