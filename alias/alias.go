@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+//Variable alias
 type MyInt int
 
 type MyMap map[int]int
