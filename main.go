@@ -14,15 +14,16 @@ var(
 )
 
 func main() {
+
 	testGolog()
 
 
 }
 
 func logSetup()  {
-	golog.SetStringPrefix(1, "->")	//This string will appear before the the printed string
-	golog.SetStringPrefix(2, "-->>")
-	golog.SetStringPrefix(3, "--->>>")
+	golog.SetStringPrefix(1, "--->")	//This string will appear before the the printed string
+	golog.SetStringPrefix(2, "----->>")
+	golog.SetStringPrefix(3, "-------->>>")
 	golog.SetFlags(4, golog.Ltime)		//log header display log time only
 
 	//golog.SetPrefix(1, "L1P ")
@@ -35,7 +36,7 @@ func logSetup()  {
 		golog.Fatal(4, "Failed to open log file",  err.Error())
 	}
 	golog.SetOutput(4, file, terminal)   //Set all levels output to both file & stdout
-	golog.ShowLogUptoLevel(2)	     //Show all 1-2 levels
+	golog.ShowLogUptoLevel(3)	     //Show all 1-2 levels
 }
 
 func testGolog()  {

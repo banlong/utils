@@ -219,14 +219,17 @@ func (dl *Golog) SetOutput(level int, w ...io.Writer) {
 
 }
 
+//prefix will be add to the front of log string when using println or prinf
 func (dl *Golog) SetStringPrefix(level int, prefix string)  {
 	dl.headers[level] = prefix
 }
 
+//How many level this golog has
 func (dl *Golog) GetLevelCount() int  {
 	return len(dl.loggers)
 }
 
+//Hide all logs that listed
 func (dl *Golog) HideLog(levels ...int) {
 	for _, lv := range levels {
 		if curLogger := dl.loggers[lv]; curLogger != nil{
@@ -245,7 +248,7 @@ func (dl *Golog) ShowLogUptoLevel(level int) {
 	}
 }
 
-// Trace Functions
+//Display the function name that app has entered
 func (dl *Golog) Enter() {
 	// Skip this function, and fetch the PC and file for its parent
 	pc, _, _, _ := runtime.Caller(1)
@@ -257,6 +260,7 @@ func (dl *Golog) Enter() {
 	fmt.Printf("Entering %s\n", fnName)
 }
 
+//Display the function name that app has exited
 func (dl *Golog) Exit() {
 	// Skip this function, and fetch the PC and file for its parent
 	pc, _, _, _ := runtime.Caller(1)
@@ -481,7 +485,7 @@ func Exit() {
 }
 
 
-//Using with defer call
+//Using with defer call to provide the elaspse time
 func TimeElapse(start time.Time) {
 	//Get function name
 	pc, _, _, _ := runtime.Caller(1)
