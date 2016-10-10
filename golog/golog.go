@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"fmt"
 	"os"
+	"time"
 )
 
 var(
@@ -92,8 +93,7 @@ func (dl *Golog) Printf(level int, format string, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 	if(dl.headers[level] != nil) {
-		prefix := []interface{}{dl.headers[level]}
-		v = append(prefix, v...)
+		format = dl.headers[level].(string) + " " +  format
 	}
 	selectLogger.Printf(format, v...)
 }
@@ -117,8 +117,7 @@ func (dl *Golog) Fatalf(level int,format string, v ...interface{}) {
 	}
 
 	if(dl.headers[level] != nil){
-		prefix := []interface{}{dl.headers[level]}
-		v = append(prefix, v...)
+		format = dl.headers[level].(string) + " " +  format
 	}
 
 	selectLogger.Fatalf(format, v...)
@@ -159,8 +158,7 @@ func (dl *Golog) Panicf(level int, format string, v ...interface{}) {
 	}
 
 	if(dl.headers[level] != nil){
-		prefix := []interface{}{dl.headers[level]}
-		v = append(prefix, v...)
+		format = dl.headers[level].(string) + " " +  format
 	}
 
 	selectLogger.Panicf(format, v)
@@ -303,8 +301,7 @@ func Printf(level int, format string, v ...interface{}) {
 	}
 
 	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
-		v = append(prefix, v...)
+		format = standardLogger.headers[level].(string) + " " +  format
 	}
 
 	selectLogger.Printf(format, v...)
@@ -331,8 +328,7 @@ func Fatalf(level int,format string, v ...interface{}) {
 	}
 
 	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
-		v = append(prefix, v...)
+		format = standardLogger.headers[level].(string) + " " +  format
 	}
 
 	selectLogger.Fatalf(format, v...)
@@ -373,8 +369,7 @@ func Panicf(level int, format string, v ...interface{}) {
 	}
 
 	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
-		v = append(prefix, v...)
+		format = standardLogger.headers[level].(string) + " " +  format
 	}
 
 	selectLogger.Panicf(format, v)
@@ -471,7 +466,7 @@ func Enter() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	fmt.Printf("Entering %s\n", fnName)
+	Printf(1, "Entering %s\n", fnName)
 }
 
 func Exit() {
@@ -482,5 +477,17 @@ func Exit() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	fmt.Printf("Exiting  %s\n", fnName)
+	Printf(1, "Exiting  %s\n", fnName)
+}
+
+
+//Using with defer call
+func TimeElapse(start time.Time) {
+	//Get function name
+	pc, _, _, _ := runtime.Caller(1)
+	functionObject := runtime.FuncForPC(pc)
+	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
+	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
+	elapsed := time.Since(start)
+	Printf(1, "%s took %s", fnName, elapsed)
 }

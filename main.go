@@ -5,7 +5,7 @@ import (
 import (
 	"os"
 	"utils/golog"
-	"utils/env"
+	"time"
 )
 
 var(
@@ -19,30 +19,32 @@ func main() {
 
 }
 
-func testGolog()  {
-	golog.Enter()
-	golog.SetStringPrefix(1, "LV1-")
-	golog.SetStringPrefix(2, "LV2---")
-	golog.SetStringPrefix(3, "LV3------")
+func logSetup()  {
+	golog.SetStringPrefix(1, "->")	//This string will appear before the the printed string
+	golog.SetStringPrefix(2, "-->>")
+	golog.SetStringPrefix(3, "--->>>")
+	golog.SetFlags(4, golog.Ltime)		//log header display log time only
 
-	golog.SetFlags(4, golog.Ltime|golog.Lshortfile)
-	golog.SetPrefix(1, "L1P ")
-	golog.SetPrefix(2, "L2P ")
-	golog.SetPrefix(3, "L3P ")
+	//golog.SetPrefix(1, "L1P ")
+	//golog.SetPrefix(2, "L2P ")
+	//golog.SetPrefix(3, "L3P ")
+
 
 	file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		golog.Fatal(4, "Failed to open log file",  err.Error())
 	}
-	golog.SetOutput(4, file, terminal)   //4 out of range, --> default is all
-	golog.ShowLogUptoLevel(2)
+	golog.SetOutput(4, file, terminal)   //Set all levels output to both file & stdout
+	golog.ShowLogUptoLevel(2)	     //Show all 1-2 levels
+}
 
+func testGolog()  {
+	logSetup()
+	defer golog.TimeElapse(time.Now())		//log the elapse time from this point till end of the method
+	golog.Enter()
 	golog.Println(1, "This is level 1")
 	golog.Println(2, "This is level 2")
 	golog.Println(3, "This is level 3")
-
-	env.Hello()
-
 	golog.Exit()
 }
 
