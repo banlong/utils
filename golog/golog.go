@@ -67,12 +67,10 @@ func (dl *Golog) Println(level int, v ...interface{}) {
 	if selectLogger == nil{
 		selectLogger = dl.loggers[defaultLevel]
 	}
-
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
-		v = append(prefix, v...)
-	}
+	prefix := []interface{}{dl.headers[level]}
+	v = append(prefix, v...)
 	selectLogger.Println(v...)
+
 }
 
 func (dl *Golog) Print(level int, v ...interface{}) {
@@ -81,11 +79,10 @@ func (dl *Golog) Print(level int, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil) {
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
-
 	selectLogger.Print(v...)
 }
 
@@ -94,12 +91,10 @@ func (dl *Golog) Printf(level int, format string, v ...interface{}) {
 	if selectLogger == nil{
 		selectLogger = dl.loggers[defaultLevel]
 	}
-
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil) {
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
-
 	selectLogger.Printf(format, v...)
 }
 
@@ -108,12 +103,10 @@ func (dl *Golog) Fatal(level int, v ...interface{}) {
 	if selectLogger == nil{
 		selectLogger = dl.loggers[defaultLevel]
 	}
-
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil) {
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
-
 	selectLogger.Fatal(v...)
 }
 
@@ -123,8 +116,8 @@ func (dl *Golog) Fatalf(level int,format string, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil){
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
 
@@ -137,8 +130,8 @@ func (dl *Golog) Fatalln(level int, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil){
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
 
@@ -151,8 +144,8 @@ func (dl *Golog) Panic(level int, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil){
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
 
@@ -165,8 +158,8 @@ func (dl *Golog) Panicf(level int, format string, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil){
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
 
@@ -179,8 +172,8 @@ func (dl *Golog) Panicln(level int, v ...interface{}) {
 		selectLogger = dl.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
-		prefix := []interface{}{standardLogger.headers[level]}
+	if(dl.headers[level] != nil){
+		prefix := []interface{}{dl.headers[level]}
 		v = append(prefix, v...)
 	}
 
@@ -191,11 +184,12 @@ func (dl *Golog) Panicln(level int, v ...interface{}) {
 func (dl *Golog) SetFlags(level int, flag int) {
 	selectLogger := dl.loggers[level]
 	if selectLogger == nil{
-		if selectLogger == nil{
-			for _, logger := range dl.loggers{
-				logger.SetFlags(flag)
-			}
+		for _, logger := range dl.loggers{
+			logger.SetFlags(flag)
 		}
+
+	}else{
+		selectLogger.SetFlags(flag)
 	}
 }
 
@@ -203,11 +197,11 @@ func (dl *Golog) SetFlags(level int, flag int) {
 func (dl *Golog) SetPrefix(level int, prefix string) {
 	selectLogger := dl.loggers[level]
 	if selectLogger == nil{
-		if selectLogger == nil{
-			for _, logger := range dl.loggers{
-				logger.SetPrefix(prefix)
-			}
+		for _, logger := range dl.loggers{
+			logger.SetPrefix(prefix)
 		}
+	}else{
+		selectLogger.SetPrefix(prefix)
 	}
 
 }
@@ -220,6 +214,8 @@ func (dl *Golog) SetOutput(level int, w ...io.Writer) {
 		for _, logger := range dl.loggers{
 			logger.SetOutput(multi)
 		}
+	}else{
+		selectLogger.SetOutput(multi)
 	}
 
 
@@ -228,7 +224,6 @@ func (dl *Golog) SetOutput(level int, w ...io.Writer) {
 func (dl *Golog) SetStringPrefix(level int, prefix string)  {
 	dl.headers[level] = prefix
 }
-
 
 func (dl *Golog) GetLevelCount() int  {
 	return len(dl.loggers)
@@ -281,8 +276,7 @@ func Println(level int, v ...interface{}) {
 		selectLogger = standardLogger.loggers[defaultLevel]
 	}
 
-	//Init a slice of interface
-	if(standardLogger.headers[level] != nil){
+	if standardLogger.headers[level] != nil{
 		prefix := []interface{}{standardLogger.headers[level]}
 		v = append(prefix, v...)
 	}
@@ -295,11 +289,10 @@ func Print(level int, v ...interface{}) {
 		selectLogger = standardLogger.loggers[defaultLevel]
 	}
 
-	if(standardLogger.headers[level] != nil){
+	if standardLogger.headers[level] != nil{
 		prefix := []interface{}{standardLogger.headers[level]}
 		v = append(prefix, v...)
 	}
-
 	selectLogger.Print(v...)
 }
 
@@ -405,11 +398,12 @@ func Panicln(level int, v ...interface{}) {
 func SetFlags(level int, flag int) {
 	selectLogger := standardLogger.loggers[level]
 	if selectLogger == nil{
-		if selectLogger == nil{
-			for _, logger := range standardLogger.loggers{
-				logger.SetFlags(flag)
-			}
+		for _, logger := range standardLogger.loggers{
+			logger.SetFlags(flag)
 		}
+
+	}else{
+		selectLogger.SetFlags(flag)
 	}
 }
 
@@ -417,12 +411,13 @@ func SetFlags(level int, flag int) {
 func SetPrefix(level int, prefix string) {
 	selectLogger := standardLogger.loggers[level]
 	if selectLogger == nil{
-		if selectLogger == nil{
-			for _, logger := range standardLogger.loggers{
-				logger.SetPrefix(prefix)
-			}
+		for _, logger := range standardLogger.loggers{
+			logger.SetPrefix(prefix)
 		}
+	}else{
+		selectLogger.SetPrefix(prefix)
 	}
+
 
 }
 
@@ -434,6 +429,8 @@ func SetOutput(level int, w ...io.Writer) {
 		for _, logger := range standardLogger.loggers{
 			logger.SetOutput(multi)
 		}
+	}else{
+		selectLogger.SetOutput(multi)
 	}
 
 
@@ -460,7 +457,6 @@ func ShowLogUptoLevel(level int) {
 	totalLevel := len(standardLogger.loggers)
 	for i:= level + 1; i <= totalLevel; i++ {
 		if logger := standardLogger.loggers[i]; logger != nil{
-			fmt.Println("hide leve" , i)
 			logger.SetOutput(invisibleWriter)
 		}
 	}
