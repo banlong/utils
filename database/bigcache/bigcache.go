@@ -1,14 +1,15 @@
-package main
+//Example, bigcache object cannot be save. Data is on Heap, after app turn off the data will be erased
+package maind
 
 import (
 	"github.com/allegro/bigcache"
 	"time"
 	"fmt"
-
 	"encoding/json"
 	"log"
 	"encoding/gob"
 	"bytes"
+
 )
 
 type Dog struct{
@@ -65,5 +66,8 @@ func main()  {
 	err = decoder.Decode(getDog)
 	fmt.Println("Struct Value:",*getDog)
 
+
 }
+
+
 
