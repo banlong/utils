@@ -10,6 +10,7 @@ import (
 	"encoding/gob"
 	"bytes"
 
+	"strconv"
 )
 
 type Dog struct{
@@ -117,7 +118,46 @@ func BigCacheExample()  {
 	fmt.Println("Key:",searchKeyStr)
 	fmt.Println("Value:",*returnVal3)
 	fmt.Println();
+
+
+	//Test thread safe
+	for i:= 0; i<100; i++ {
+		key = "mydog " + strconv.Itoa(i)
+		log.Println("Set " + key)
+
+		dog := Dog{
+			Name: "Nancy-" + strconv.Itoa(i),
+			Owner: "Richard",
+		}
+		log.Println("Set Value", dog)
+
+		encodedDog, err := json.Marshal(dog)
+		if err != nil{
+			log.Println(err.Error())
+		}
+		go cache.Set(key, encodedDog)
+
+	}
+
+
+	for i:= 0; i<100; i++ {
+		key = "mydog " + strconv.Itoa(i)
+		log.Println("Get " + key)
+		go func() {
+			entry, _ = cache.Get(key)
+			//Notice that I did not using getDog declared above, because it is the global variable
+			//and can cause wrong reference because of go routines
+			//In this case, create a local getDog is sufficient
+			getDog := new(Dog)
+			err = json.Unmarshal(entry, getDog)
+			fmt.Println("Key:",key, getDog)
+		}()
+
+	}
+
+	//fmt.Scanln()
 }
+
 
 type Key struct{
 	Id string
