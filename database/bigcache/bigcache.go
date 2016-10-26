@@ -28,6 +28,7 @@ func main()  {
 
 
 func BigCacheExample()  {
+
 	//bigcache provide only get and set
 	fmt.Println("STORE {STRING, STRING}")
 	cache, _ := bigcache.NewBigCache(bigcache.DefaultConfig(10 * time.Minute))
@@ -122,7 +123,7 @@ func BigCacheExample()  {
 
 	//Test thread safe
 	for i:= 0; i<100; i++ {
-		key = "mydog " + strconv.Itoa(i)
+		key := "mydog " + strconv.Itoa(i)
 		log.Println("Set " + key)
 
 		dog := Dog{
@@ -137,11 +138,12 @@ func BigCacheExample()  {
 		}
 		go cache.Set(key, encodedDog)
 
+
 	}
 
 
 	for i:= 0; i<100; i++ {
-		key = "mydog " + strconv.Itoa(i)
+		key := "mydog " + strconv.Itoa(i)
 		log.Println("Get " + key)
 		go func() {
 			entry, _ = cache.Get(key)
@@ -155,7 +157,7 @@ func BigCacheExample()  {
 
 	}
 
-	//fmt.Scanln()
+	fmt.Scanln()
 }
 
 
