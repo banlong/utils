@@ -3,11 +3,10 @@ package main
 import (
 	"log"
 	"github.com/blevesearch/bleve"
-	"utils/hashmap"
 	"fmt"
-
 	"strconv"
 	"github.com/blevesearch/bleve/search"
+	"encoding/json"
 )
 
 //Bleve create index based on the defined search values & return value. This is very useful to use the indexing with
@@ -18,6 +17,13 @@ import (
 // Step 3: Using return key to get the data from Bolt or any Key/Value database
 
 type Message  struct{
+	Id 	string
+	From 	string
+	Body 	string
+	Value   int
+}
+
+type Key struct{
 	Id 	string
 	From 	string
 	Body 	string
@@ -71,6 +77,15 @@ func BleveExample2() {
 
 	//Create sample data
 	for i := 0; i < 11; i++ {
+
+		key := Key{
+			Id:    "msgId-" + strconv.Itoa(i),
+			From:  "marty-" + strconv.Itoa(i) + ".schoch@gmail.com",
+			Body:  "bleve indexing is easy",
+			Value: i,
+		}
+
+		keyStr, _ := json.Marshal(key)
 		message := Message{
 			Id:    "msgId-" + strconv.Itoa(i),
 			From:  "marty-" + strconv.Itoa(i) + ".schoch@gmail.com",
@@ -78,8 +93,9 @@ func BleveExample2() {
 			Value: i,
 		}
 
+
 		//Add new index, field to be used as Index, we can define multiple index at the same time for one object
-		dataIndex.Index(message.Id, message)
+		dataIndex.Index(string(keyStr), message)
 		//This message.Id is the return value from the search result.
 		//Assume I save message object into key-value bolt (key= message.Id, value = message).
 		//If I want to search the messages in bolt that satisfy my conditions, if match found,

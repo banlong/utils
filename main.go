@@ -8,10 +8,11 @@ import (
 	"reflect"
 	"strconv"
 	"utils/hashmap"
+	"encoding/json"
 )
 
 func main() {
-	BleveExample1()
+	BleveExample2()
 }
 
 func TestHashMap1() {
@@ -151,15 +152,25 @@ func BleveExample2() {
 
 	//Create sample data
 	for i := 0; i < 11; i++ {
+
+		key := Key{
+			Id:    "msgId" + strconv.Itoa(i),
+			From:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
+			Body:  "bleve indexing is easy",
+			Value: i,
+		}
+
+		keyStr, _ := json.Marshal(key)
+
 		message := Message{
-			Id:    "msgId-" + strconv.Itoa(i),
-			From:  "marty-" + strconv.Itoa(i) + ".schoch@gmail.com",
+			Id:    "msgId" + strconv.Itoa(i),
+			From:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
 			Body:  "bleve indexing is easy",
 			Value: i,
 		}
 
 		//Add new index, field to be used as Index, we can define multiple index at the same time for one object
-		dataIndex.Index(message.Id, message)
+		dataIndex.Index(string(keyStr), message)
 		//This message.Id is the return value from the search result.
 		//Assume I save message object into key-value bolt (key= message.Id, value = message).
 		//If I want to search the messages in bolt that satisfy my conditions, if match found,
@@ -171,7 +182,7 @@ func BleveExample2() {
 	// Case 1: search for the "easy". Plain terms without any other syntax are
 	// interpreted as a match query for the term in the default field.
 	// The default field is "_all" unless overridden in the index mapping.
-	searchPlanValue := bleve.NewQueryStringQuery("easy")
+	searchPlanValue := bleve.NewQueryStringQuery("+Id:msgId1")
 
 	//Declare a search request
 	searchRequest := bleve.NewSearchRequest(searchPlanValue)
@@ -185,125 +196,125 @@ func BleveExample2() {
 		log.Println("---------------------------------")
 		PrintDocumentMatchCollection(searchResult.Hits)
 		log.Println("Total:", searchResult.Total)
-		log.Println("ID:", searchResult.Hits[0].ID)
-		log.Println("Index:", searchResult.Hits[0].Index)
-		log.Println("Fields:", searchResult.Hits[0].Fields)
-		log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		log.Println("Locations: ", searchResult.Hits[0].Locations)
-		log.Println("Score:", searchResult.Hits[0].Score)
+		//log.Println("ID:", searchResult.Hits[0].ID)
+		//log.Println("Index:", searchResult.Hits[0].Index)
+		//log.Println("Fields:", searchResult.Hits[0].Fields)
+		//log.Println("Fragments:", searchResult.Hits[0].Fragments)
+		//log.Println("Locations: ", searchResult.Hits[0].Locations)
+		//log.Println("Score:", searchResult.Hits[0].Score)
 	}
 	log.Println("----------------------------------")
 	log.Println("searchResult:", searchResult)
 
-	// Case 2: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
-	searchValueInField := bleve.NewQueryStringQuery("From:marty.schoch@gmail.com")
-
-	//Declare a search request
-	searchRequest = bleve.NewSearchRequest(searchValueInField)
-
-	//Execute search
-	searchResult, _ = dataIndex.Search(searchRequest)
-
-	//Display result
-	//Display result
-	if searchResult.Hits.Len() > 0 {
-		log.Println("2A - SEARCH FIELDS 'From' CONTAINS 'marty.schoch@gmail.com'")
-		log.Println("---------------------------------")
-		PrintDocumentMatchCollection(searchResult.Hits)
-
-		log.Println("Total:", searchResult.Total)
-		log.Println("ID:", searchResult.Hits[0].ID)
-		log.Println("Index:", searchResult.Hits[0].Index)
-		log.Println("Fields:", searchResult.Hits[0].Fields)
-		log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		log.Println("Locations: ", searchResult.Hits[0].Locations)
-		log.Println("Score:", searchResult.Hits[0].Score)
-	}
-	log.Println("----------------------------------")
-	log.Println("searchResult:", searchResult)
-
-	// Case 2: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
-	searchMatchField := bleve.NewQueryStringQuery("+From:marty.schoch@gmail.com")
-
-	//Declare a search request
-	searchRequest = bleve.NewSearchRequest(searchMatchField)
-
-	//Execute search
-	searchResult, _ = dataIndex.Search(searchRequest)
-
-	//Display result
-	//Display result
-	if searchResult.Hits.Len() > 0 {
-		log.Println("2B - SEARCH FIELDS 'From' MATCHED 'marty.schoch@gmail.com'")
-		log.Println("---------------------------------")
-		log.Println("Total:", searchResult.Total)
-		PrintDocumentMatchCollection(searchResult.Hits)
-		log.Println("ID:", searchResult.Hits[0].ID)
-		log.Println("Index:", searchResult.Hits[0].Index)
-		log.Println("Fields:", searchResult.Hits[0].Fields)
-		log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		log.Println("Locations: ", searchResult.Hits[0].Locations)
-		log.Println("Score:", searchResult.Hits[0].Score)
-	}
-	log.Println("----------------------------------")
-	log.Println("searchResult:", searchResult)
-
-	// Case 3: Required, Optional, and Exclusion.
-	// Example: +description:water -light beer will perform a Boolean Query that MUST satisfy
-	// the Match Query for the term water in the description field, MUST NOT satisfy the Match
-	// Query for the term light in the default field, and SHOULD satisfy the Match Query for
-	// the term beer in the default field.
-	searchBooleanValue := bleve.NewQueryStringQuery("+From:marty.schoch@gmail.com -easy bleve")
-
-	//Declare a search request
-	searchRequest = bleve.NewSearchRequest(searchBooleanValue)
-
-	//Execute search
-	searchResult, _ = dataIndex.Search(searchRequest)
-
-	//Display result
-	if searchResult.Hits.Len() > 0 {
-		log.Println("3 - SEARCH FIELDS 'Value' CONTAINS '+From:marty.schoch@gmail.com -easy bleve'")
-		log.Println("Search message that From field has 'marty.schoch@gmail.com', not have 'easy', have 'bleve'")
-		log.Println("---------------------------------")
-		log.Println("Total:", searchResult.Total)
-		PrintDocumentMatchCollection(searchResult.Hits)
-		log.Println("ID:", searchResult.Hits[0].ID)
-		log.Println("Index:", searchResult.Hits[0].Index)
-		log.Println("Fields:", searchResult.Hits[0].Fields)
-		log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		log.Println("Locations: ", searchResult.Hits[0].Locations)
-		log.Println("Score:", searchResult.Hits[0].Score)
-	}
-	log.Println("----------------------------------")
-	log.Println("searchResult:", searchResult)
-
-	//Case 4: Numeric Ranges
-	//You can perform numeric ranges by using the >, >=, <, and <= operators, followed by a numeric value.
-	//Example: abv:>10 will perform an Numeric Range Query on the abv field for values greater than ten.
-	searchRannge := bleve.NewQueryStringQuery("Value:>5 Value:<11 ")
-
-	//Declare a search request
-	searchRequest = bleve.NewSearchRequest(searchRannge)
-
-	//Execute search
-	searchResult, _ = dataIndex.Search(searchRequest)
-
-	//Display result
-	if searchResult.Hits.Len() > 0 {
-		log.Println("4 - SEARCH FIELDS 'Value' CONTAINS 'Value:>5 Value:<11'")
-		log.Println("---------------------------------")
-		log.Println("Total:", searchResult.Total)
-		PrintDocumentMatchCollection(searchResult.Hits)
-		log.Println("ID:", searchResult.Hits[0].ID)
-		log.Println("Index:", searchResult.Hits[0].Index)
-		log.Println("Fields:", searchResult.Hits[0].Fields)
-		log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		log.Println("Locations: ", searchResult.Hits[0].Locations)
-		log.Println("Score:", searchResult.Hits[0].Score)
-	}
-	log.Println("----------------------------------")
-	log.Println("searchResult:", searchResult)
+	//// Case 2: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
+	//searchValueInField := bleve.NewQueryStringQuery("From:marty.schoch@gmail.com")
+	//
+	////Declare a search request
+	//searchRequest = bleve.NewSearchRequest(searchValueInField)
+	//
+	////Execute search
+	//searchResult, _ = dataIndex.Search(searchRequest)
+	//
+	////Display result
+	////Display result
+	//if searchResult.Hits.Len() > 0 {
+	//	log.Println("2A - SEARCH FIELDS 'From' CONTAINS 'marty.schoch@gmail.com'")
+	//	log.Println("---------------------------------")
+	//	PrintDocumentMatchCollection(searchResult.Hits)
+	//
+	//	log.Println("Total:", searchResult.Total)
+	//	log.Println("ID:", searchResult.Hits[0].ID)
+	//	log.Println("Index:", searchResult.Hits[0].Index)
+	//	log.Println("Fields:", searchResult.Hits[0].Fields)
+	//	log.Println("Fragments:", searchResult.Hits[0].Fragments)
+	//	log.Println("Locations: ", searchResult.Hits[0].Locations)
+	//	log.Println("Score:", searchResult.Hits[0].Score)
+	//}
+	//log.Println("----------------------------------")
+	//log.Println("searchResult:", searchResult)
+	//
+	//// Case 2: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
+	//searchMatchField := bleve.NewQueryStringQuery("+From:marty.schoch@gmail.com")
+	//
+	////Declare a search request
+	//searchRequest = bleve.NewSearchRequest(searchMatchField)
+	//
+	////Execute search
+	//searchResult, _ = dataIndex.Search(searchRequest)
+	//
+	////Display result
+	////Display result
+	//if searchResult.Hits.Len() > 0 {
+	//	log.Println("2B - SEARCH FIELDS 'From' MATCHED 'marty.schoch@gmail.com'")
+	//	log.Println("---------------------------------")
+	//	log.Println("Total:", searchResult.Total)
+	//	PrintDocumentMatchCollection(searchResult.Hits)
+	//	log.Println("ID:", searchResult.Hits[0].ID)
+	//	log.Println("Index:", searchResult.Hits[0].Index)
+	//	log.Println("Fields:", searchResult.Hits[0].Fields)
+	//	log.Println("Fragments:", searchResult.Hits[0].Fragments)
+	//	log.Println("Locations: ", searchResult.Hits[0].Locations)
+	//	log.Println("Score:", searchResult.Hits[0].Score)
+	//}
+	//log.Println("----------------------------------")
+	//log.Println("searchResult:", searchResult)
+	//
+	//// Case 3: Required, Optional, and Exclusion.
+	//// Example: +description:water -light beer will perform a Boolean Query that MUST satisfy
+	//// the Match Query for the term water in the description field, MUST NOT satisfy the Match
+	//// Query for the term light in the default field, and SHOULD satisfy the Match Query for
+	//// the term beer in the default field.
+	//searchBooleanValue := bleve.NewQueryStringQuery("+From:marty.schoch@gmail.com -easy bleve")
+	//
+	////Declare a search request
+	//searchRequest = bleve.NewSearchRequest(searchBooleanValue)
+	//
+	////Execute search
+	//searchResult, _ = dataIndex.Search(searchRequest)
+	//
+	////Display result
+	//if searchResult.Hits.Len() > 0 {
+	//	log.Println("3 - SEARCH FIELDS 'Value' CONTAINS '+From:marty.schoch@gmail.com -easy bleve'")
+	//	log.Println("Search message that From field has 'marty.schoch@gmail.com', not have 'easy', have 'bleve'")
+	//	log.Println("---------------------------------")
+	//	log.Println("Total:", searchResult.Total)
+	//	PrintDocumentMatchCollection(searchResult.Hits)
+	//	log.Println("ID:", searchResult.Hits[0].ID)
+	//	log.Println("Index:", searchResult.Hits[0].Index)
+	//	log.Println("Fields:", searchResult.Hits[0].Fields)
+	//	log.Println("Fragments:", searchResult.Hits[0].Fragments)
+	//	log.Println("Locations: ", searchResult.Hits[0].Locations)
+	//	log.Println("Score:", searchResult.Hits[0].Score)
+	//}
+	//log.Println("----------------------------------")
+	//log.Println("searchResult:", searchResult)
+	//
+	////Case 4: Numeric Ranges
+	////You can perform numeric ranges by using the >, >=, <, and <= operators, followed by a numeric value.
+	////Example: abv:>10 will perform an Numeric Range Query on the abv field for values greater than ten.
+	//searchRannge := bleve.NewQueryStringQuery("Value:>5 Value:<11 ")
+	//
+	////Declare a search request
+	//searchRequest = bleve.NewSearchRequest(searchRannge)
+	//
+	////Execute search
+	//searchResult, _ = dataIndex.Search(searchRequest)
+	//
+	////Display result
+	//if searchResult.Hits.Len() > 0 {
+	//	log.Println("4 - SEARCH FIELDS 'Value' CONTAINS 'Value:>5 Value:<11'")
+	//	log.Println("---------------------------------")
+	//	log.Println("Total:", searchResult.Total)
+	//	PrintDocumentMatchCollection(searchResult.Hits)
+	//	log.Println("ID:", searchResult.Hits[0].ID)
+	//	log.Println("Index:", searchResult.Hits[0].Index)
+	//	log.Println("Fields:", searchResult.Hits[0].Fields)
+	//	log.Println("Fragments:", searchResult.Hits[0].Fragments)
+	//	log.Println("Locations: ", searchResult.Hits[0].Locations)
+	//	log.Println("Score:", searchResult.Hits[0].Score)
+	//}
+	//log.Println("----------------------------------")
+	//log.Println("searchResult:", searchResult)
 }
 
 type Message struct {
@@ -321,4 +332,12 @@ func PrintDocumentMatchCollection(data search.DocumentMatchCollection) {
 	}
 	fmt.Print("]")
 	fmt.Println()
+}
+
+
+type Key struct{
+	Id 	string
+	From 	string
+	Body 	string
+	Value   int
 }
