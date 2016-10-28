@@ -133,7 +133,6 @@ func BleveExample1() {
 	if searchResult.Hits.Len() > 0 {
 		log.Println("SEARCH ALL Value CONTAINS '>5'")
 		log.Println("---------------------------------")
-		PrintDocumentMatchCollection(searchResult.Hits)
 		log.Println("Total:", searchResult.Total)
 	}
 	log.Println("----------------------------------")
@@ -141,72 +140,98 @@ func BleveExample1() {
 }
 
 func BleveExample2() {
-	var dataIndex bleve.Index
+	//var dataIndex bleve.Index
 	indexPath := "hashmap/indexstore"
+	//dataIndex := CreateSample(indexPath)
 
 	dataIndex, err := bleve.Open(indexPath)
 	if err != nil {
 		mapping := bleve.NewIndexMapping()
 		dataIndex, err = bleve.New(indexPath, mapping)
 	}
-
 	//Create sample data
-	for i := 0; i < 11; i++ {
+	//CreateSampleData(dataIndex)
 
-		key := Key{
-			Id:    "msgId" + strconv.Itoa(i),
-			From:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
-			Body:  "bleve indexing is easy",
-			Value: i,
-		}
+	//==========================================================================================================//
+	// CASE I: search for the "easy". The NewQueryStringQuery will search for field Body, hit if search string
+	// are contained in Body field
+	searchStrQuery := bleve.NewQueryStringQuery("Body:indexing")
 
-		keyStr, _ := json.Marshal(key)
-
-		message := Message{
-			Id:    "msgId" + strconv.Itoa(i),
-			From:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
-			Body:  "bleve indexing is easy",
-			Value: i,
-		}
-
-		//Add new index, field to be used as Index, we can define multiple index at the same time for one object
-		dataIndex.Index(string(keyStr), message)
-		//This message.Id is the return value from the search result.
-		//Assume I save message object into key-value bolt (key= message.Id, value = message).
-		//If I want to search the messages in bolt that satisfy my conditions, if match found,
-		//the search result will contain the key that I will then use it to retrive the object
-		//from BoltDB.
-
-	}
-
-	// Case 1: search for the "easy". Plain terms without any other syntax are
-	// interpreted as a match query for the term in the default field.
-	// The default field is "_all" unless overridden in the index mapping.
-	searchPlanValue := bleve.NewQueryStringQuery("+Id:msgId1")
-
-	//Declare a search request
-	searchRequest := bleve.NewSearchRequest(searchPlanValue)
-
+	//Declare a search request.
+	searchRequest := bleve.NewSearchRequest(searchStrQuery)
+	//--------------------------------------------------------------------------------------------------------//
+	//Notice that the default NewSearchRequestOptions(q, 10, 0, false) with Size = 10, From index = 0, Explain = false
+	//therefore by default the Hits array just return maximum 10 found items. But we can change it by set the :
+	/*
+	searchRequest.Size = 200		//Show max 200 matched items
+	searchRequest.Explain = true		//print out the array of return values
+	searchRequest.From = 10			//return from item 10
+	*/
+	//--------------------------------------------------------------------------------------------------------//
 	//Execute search
 	searchResult, _ := dataIndex.Search(searchRequest)
 
 	//Display result
-	if searchResult.Hits.Len() > 0 {
-		log.Println("1 - SEARCH ALL FIELDS CONTAINS 'easy'")
-		log.Println("---------------------------------")
-		PrintDocumentMatchCollection(searchResult.Hits)
-		log.Println("Total:", searchResult.Total)
-		//log.Println("ID:", searchResult.Hits[0].ID)
-		//log.Println("Index:", searchResult.Hits[0].Index)
-		//log.Println("Fields:", searchResult.Hits[0].Fields)
-		//log.Println("Fragments:", searchResult.Hits[0].Fragments)
-		//log.Println("Locations: ", searchResult.Hits[0].Locations)
-		//log.Println("Score:", searchResult.Hits[0].Score)
-	}
-	log.Println("----------------------------------")
+	log.Println("CASE I - SEARCH FIELD 'Body' CONTAINS 'indexing'")
+	log.Println("---------------------------------------------------")
+	log.Println("Total:", searchResult.Total)
+	log.Println("---------------------------------------------------")
 	log.Println("searchResult:", searchResult)
 
-	//// Case 2: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
+
+
+	//==========================================================================================================//
+	// CASE II: search EXACT MATCHED the "easy". The NewQueryStringQuery will search for field Body, hit if search string
+	// are contained in Body field
+	searchPhaseQuery := bleve.NewMatchPhraseQuery("Body:easy")
+
+	//Declare a search request.
+	searchRequest = bleve.NewSearchRequest(searchPhaseQuery)
+
+	//Execute search
+	searchResult, _ = dataIndex.Search(searchRequest)
+
+	//Display result
+	log.Println()
+	log.Println("CASE II(a) - SEARCH FIELD 'Body' CONTAINS EXACT 'easy'")
+	log.Println("---------------------------------------------------")
+	log.Println("Total:", searchResult.Total)
+	log.Println("---------------------------------------------------")
+	log.Println("searchResult:", searchResult)
+	//Return 0 hit
+
+
+
+	//Case II(b)
+	//matchQuery := bleve.NewMatchPhraseQuery("msgId10")
+	matchQuery := bleve.NewMatchQuery("msgId10")
+	searchRequest = bleve.NewSearchRequest(matchQuery)
+	searchResult, _ = dataIndex.Search(searchRequest)
+	//Return 101, not compare match whole string if there is a '.-'. Only compare the first. How to?
+
+
+	//Display result
+	log.Println()
+	log.Println("CASE II(b) - SEARCH FIELD 'Body' CONTAINS EXACT 'bleve indexing'")
+	log.Println("---------------------------------------------------")
+	log.Println("Total:", searchResult.Total)
+	log.Println("---------------------------------------------------")
+	log.Println("searchResult:", searchResult)
+	//Return 0 hit
+
+	//==========================================================================================================//
+	searchPhaseQuery = bleve.NewMatchPhraseQuery("easy")
+	searchRequest = bleve.NewSearchRequest(searchPhaseQuery)
+	searchResult, _ = dataIndex.Search(searchRequest)
+	//Display result
+	log.Println("CASE III - SEARCH ALL FIELDS WHICH HAVE EXACT 'easy'")
+	log.Println("---------------------------------------------------")
+	log.Println("Total:", searchResult.Total)
+	log.Println("---------------------------------------------------")
+	log.Println("searchResult:", searchResult)
+	//Return 101 hits
+	//==========================================================================================================//
+	//// Case III: Field Scoping, search for the "marty.schoch@gmail.com" in field "From".
 	//searchValueInField := bleve.NewQueryStringQuery("From:marty.schoch@gmail.com")
 	//
 	////Declare a search request
@@ -337,7 +362,41 @@ func PrintDocumentMatchCollection(data search.DocumentMatchCollection) {
 
 type Key struct{
 	Id 	string
-	From 	string
+	To 	string
 	Body 	string
 	Value   int
+}
+
+func CreateSampleData(indexVault bleve.Index)  {
+	//bleve.Index is an interface, must not be pass using the pointer. Because you will not able to
+	//access the interface methods via its pointer. Why? Recall that the interface is the collection of signature
+	//These functions do not actually implements in the interface and therefore work like a pointer to the method of
+	//the real object that this interface variable represents. For example:	var index *bleve.Index to declare
+	// a variable of interface Index. Then we cannot use index.<method's name> to access the method
+	for i := 0; i <= 100; i++ {
+
+		key := Key{
+			Id:    "msgId" + strconv.Itoa(i),
+			To:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
+			Body:  "bleve indexing is easy",
+			Value: i,
+		}
+
+		keyStr, _ := json.Marshal(key)
+
+		message := Message{
+			Id:    "msgId" + strconv.Itoa(i),
+			From:  "marty" + strconv.Itoa(i) + ".schoch@gmail.com",
+			Body:  "bleve indexing is easy",
+			Value: i,
+		}
+
+		//Add new index, field to be used as Index, we can define multiple index at the same time for one object
+		indexVault.Index(string(keyStr), message)
+		//This keyStr is the return value from the search result.
+		//Assume I save message object into key-value bolt (key= message.Id, value = message).
+		//If I want to search the messages in bolt that satisfy my conditions, if match found,
+		//the search result will contain the key that I will then use it to retrive the object
+		//from BoltDB.
+	}
 }
