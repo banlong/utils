@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"runtime"
 	"regexp"
-	"fmt"
 	"os"
 	"time"
 )
@@ -19,6 +18,9 @@ var(
 )
 
 func init()  {
+	standardLogger.SetStringPrefix(0, "-->")
+	standardLogger.SetFlags(0, Ldate|Ltime|Lshortfile)
+
 	standardLogger.SetStringPrefix(1, "-->")
 	standardLogger.SetStringPrefix(2, "---->>")
 	standardLogger.SetStringPrefix(3, "------>>>")
@@ -62,7 +64,7 @@ func New(level int, prefix string, flag int, w ...io.Writer) *Golog {
 		headers: make(map[int]interface{}),
 	}
 
-	for index := 1; index <= level; index++{
+	for index := 0; index <= level; index++{
 		ret.loggers[index] = log.New(multi, prefix, flag)
 	}
 	return &ret
@@ -262,7 +264,7 @@ func (dl *Golog) Enter() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	fmt.Printf("Entering %s\n", fnName)
+	dl.Printf(0, "Entering %s\n", fnName)
 }
 
 //Display the function name that app has exited
@@ -274,7 +276,7 @@ func (dl *Golog) Exit() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	fmt.Printf("Exiting  %s\n", fnName)
+	dl.Printf(0, "Exiting  %s\n", fnName)
 }
 
 func Println(level int, v ...interface{}) {
@@ -475,7 +477,7 @@ func Enter() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	Printf(1, "Entering %s\n", fnName)
+	Printf(0, "Entering %s\n", fnName)
 }
 
 func Exit() {
@@ -486,7 +488,7 @@ func Exit() {
 	// Regex to extract just the function name (and not the module path)
 	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
 	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	Printf(1, "Exiting  %s\n", fnName)
+	Printf(0, "Exiting  %s\n", fnName)
 }
 
 

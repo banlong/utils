@@ -183,17 +183,17 @@ func BleveExample2() {
 	//==========================================================================================================//
 	// CASE II: search EXACT MATCHED the "easy". The NewQueryStringQuery will search for field Body, hit if search string
 	// are contained in Body field
-	searchPhaseQuery := bleve.NewMatchPhraseQuery("Body:easy")
+	NewMatchQuery := bleve.NewQueryStringQuery("Id:msgId15")
 
 	//Declare a search request.
-	searchRequest = bleve.NewSearchRequest(searchPhaseQuery)
+	searchRequest = bleve.NewSearchRequest(NewMatchQuery)
 
 	//Execute search
 	searchResult, _ = dataIndex.Search(searchRequest)
 
 	//Display result
 	log.Println()
-	log.Println("CASE II(a) - SEARCH FIELD 'Body' CONTAINS EXACT 'easy'")
+	log.Println("CASE II(a) - SEARCH FIELD 'Id' CONTAINS EXACT 'msgId15'")
 	log.Println("---------------------------------------------------")
 	log.Println("Total:", searchResult.Total)
 	log.Println("---------------------------------------------------")
@@ -212,7 +212,7 @@ func BleveExample2() {
 
 	//Display result
 	log.Println()
-	log.Println("CASE II(b) - SEARCH FIELD 'Body' CONTAINS EXACT 'bleve indexing'")
+	log.Println("CASE II(b) - SEARCH FIELD 'Id' CONTAINS EXACT 'msgId10'")
 	log.Println("---------------------------------------------------")
 	log.Println("Total:", searchResult.Total)
 	log.Println("---------------------------------------------------")
@@ -220,11 +220,11 @@ func BleveExample2() {
 	//Return 0 hit
 
 	//==========================================================================================================//
-	searchPhaseQuery = bleve.NewMatchPhraseQuery("easy")
-	searchRequest = bleve.NewSearchRequest(searchPhaseQuery)
+	NewMatchPhraseQuery := bleve.NewMatchPhraseQuery("marty12.schoch@gmail.com")
+	searchRequest = bleve.NewSearchRequest(NewMatchPhraseQuery)
 	searchResult, _ = dataIndex.Search(searchRequest)
 	//Display result
-	log.Println("CASE III - SEARCH ALL FIELDS WHICH HAVE EXACT 'easy'")
+	log.Println("CASE III - SEARCH ALL FIELDs WHICH HAVE EXACT 'marty12.schoch@gmail.com'")
 	log.Println("---------------------------------------------------")
 	log.Println("Total:", searchResult.Total)
 	log.Println("---------------------------------------------------")
