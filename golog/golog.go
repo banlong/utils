@@ -15,6 +15,7 @@ var(
 	invisibleWriter = ioutil.Discard
 	terminal = os.Stdout
 	errorStd = os.Stderr
+	Exit, Enter = NewTracer(nil)
 )
 
 func init()  {
@@ -256,28 +257,37 @@ func (dl *Golog) ShowLogUptoLevel(level int) {
 }
 
 //Display the function name that app has entered
-func (dl *Golog) Enter() {
-	// Skip this function, and fetch the PC and file for its parent
-	pc, _, _, _ := runtime.Caller(1)
-	// Retrieve a Function object this functions parent
-	functionObject := runtime.FuncForPC(pc)
-	// Regex to extract just the function name (and not the module path)
-	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
-	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	dl.Printf(0, "Entering %s\n", fnName)
-}
+//func (dl *Golog) Enter() {
+//	// Skip this function, and fetch the PC and file for its parent
+//	pc, _, _, _ := runtime.Caller(1)
+//	// Retrieve a Function object this functions parent
+//	functionObject := runtime.FuncForPC(pc)
+//	// Regex to extract just the function name (and not the module path)
+//	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
+//	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
+//	dl.Printf(0, "Entering %s\n", fnName)
+//}
 
 //Display the function name that app has exited
-func (dl *Golog) Exit() {
-	// Skip this function, and fetch the PC and file for its parent
-	pc, _, _, _ := runtime.Caller(1)
-	// Retrieve a Function object this functions parent
-	functionObject := runtime.FuncForPC(pc)
-	// Regex to extract just the function name (and not the module path)
-	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
-	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	dl.Printf(0, "Exiting  %s\n", fnName)
+//func (dl *Golog) Exit() {
+//	// Skip this function, and fetch the PC and file for its parent
+//	pc, _, _, _ := runtime.Caller(1)
+//	// Retrieve a Function object this functions parent
+//	functionObject := runtime.FuncForPC(pc)
+//	// Regex to extract just the function name (and not the module path)
+//	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
+//	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
+//	dl.Printf(0, "Exiting  %s\n", fnName)
+//}
+
+func (dl *Golog) Enter(args ...interface{})string {
+	return Enter(args...)
 }
+
+
+func (dl *Golog) Exit(input string){
+	Exit(input)
+};
 
 func Println(level int, v ...interface{}) {
 	selectLogger := standardLogger.loggers[level]
@@ -468,28 +478,28 @@ func ShowLogUptoLevel(level int) {
 	}
 }
 
-// Trace Functions
-func Enter() {
-	// Skip this function, and fetch the PC and file for its parent
-	pc, _, _, _ := runtime.Caller(1)
-	// Retrieve a Function object this functions parent
-	functionObject := runtime.FuncForPC(pc)
-	// Regex to extract just the function name (and not the module path)
-	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
-	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	Printf(0, "Entering %s\n", fnName)
-}
-
-func Exit() {
-	// Skip this function, and fetch the PC and file for its parent
-	pc, _, _, _ := runtime.Caller(1)
-	// Retrieve a Function object this functions parent
-	functionObject := runtime.FuncForPC(pc)
-	// Regex to extract just the function name (and not the module path)
-	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
-	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
-	Printf(0, "Exiting  %s\n", fnName)
-}
+//// Trace Functions
+//func Enter() {
+//	// Skip this function, and fetch the PC and file for its parent
+//	pc, _, _, _ := runtime.Caller(1)
+//	// Retrieve a Function object this functions parent
+//	functionObject := runtime.FuncForPC(pc)
+//	// Regex to extract just the function name (and not the module path)
+//	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
+//	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
+//	Printf(0, "Entering %s\n", fnName)
+//}
+//
+//func Exit() {
+//	// Skip this function, and fetch the PC and file for its parent
+//	pc, _, _, _ := runtime.Caller(1)
+//	// Retrieve a Function object this functions parent
+//	functionObject := runtime.FuncForPC(pc)
+//	// Regex to extract just the function name (and not the module path)
+//	extractFnName := regexp.MustCompile(`^.*\.(.*)$`)
+//	fnName := extractFnName.ReplaceAllString(functionObject.Name(), "$1")
+//	Printf(0, "Exiting  %s\n", fnName)
+//}
 
 
 //Using with defer call to provide the elaspse time
@@ -502,3 +512,5 @@ func TimeElapse(start time.Time) {
 	elapsed := time.Since(start)
 	Printf(1, "%s took %s", fnName, elapsed)
 }
+
+type Empty struct {}

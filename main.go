@@ -9,10 +9,18 @@ import (
 	"strconv"
 	"utils/hashmap"
 	"encoding/json"
+	"utils/golog"
 )
 
+var Exit, Enter = golog.NewTracer(nil);
+
 func main() {
-	BleveExample2()
+	defer Exit(Enter())
+	TestTracing()
+}
+
+func TestTracing()  {
+	defer Exit(Enter())
 }
 
 func TestHashMap1() {
@@ -400,3 +408,5 @@ func CreateSampleData(indexVault bleve.Index)  {
 		//from BoltDB.
 	}
 }
+
+type Empty struct{}
