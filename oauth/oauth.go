@@ -10,11 +10,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/gorilla/mux"
+	"go/token"
 )
 // using asymmetric crypto/RSA keys
 // location of the files used for signing and verification
 const (
-	privKeyPath = "oauth/keys/app.rsa.ppk" // openssl genrsa -out app.rsa 1024
+	privKeyPath = "oauth/keys/app.rsa" // openssl genrsa -out app.rsa 1024
 	pubKeyPath = "oauth/keys/app.rsa.pub" // openssl rsa -in app.rsa -pubout > app.rsa.pub
 )
 // verify key and sign key
@@ -82,8 +83,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create a signer for rsa 256
-	//t := jwt.New(jwt.GetSigningMethod("RS256"))
-	t := jwt.New(jwt.SigningMethodRS512)
+	//t := jwt.New(jwt.GetSigningMethod("HS256"))
+	t := jwt.New(jwt.SigningMethodHS256)
 
 	// set our claims
 	claims := make(jwt.MapClaims)
@@ -108,29 +109,37 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 // only accessible with a valid token
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	token, err := request.ParseFromRequest(r, request.OAuth2Extractor, keyLookupFunc)
-	if err != nil {
-		switch err.(type) {
-		case *jwt.ValidationError: // something was wrong during the validation
-			vErr := err.(*jwt.ValidationError)
-			switch vErr.Errors {
-			case jwt.ValidationErrorExpired:
-				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, "Token Expired, get a new one.")
-				return
-			default:
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintln(w, "Error while Parsing Token!")
-				log.Printf("ValidationError error: %+v\n", vErr.Errors)
-				return
-			}
-		default: // something else went wrong
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintln(w, "Error while Parsing Token!")
-			log.Printf("Token parse error: %v\n", err)
-			return
-		}
+	token, err := request.ParseFromRequest(r, request.OAuth2Extractor, keyLookupFunc);
+	if  err == nil {
+		claims := token.Claims.(jwt.MapClaims)
+		fmt.Printf("Token for user %v expires %v", claims["user"], claims["exp"])
 	}
+
+
+
+	//token, err := request.ParseFromRequest(r, request.OAuth2Extractor, keyLookupFunc)
+	//if err != nil {
+	//	switch err.(type) {
+	//	case *jwt.ValidationError: // something was wrong during the validation
+	//		vErr := err.(*jwt.ValidationError)
+	//		switch vErr.Errors {
+	//		case jwt.ValidationErrorExpired:
+	//			w.WriteHeader(http.StatusUnauthorized)
+	//			fmt.Fprintln(w, "Token Expired, get a new one.")
+	//			return
+	//		default:
+	//			w.WriteHeader(http.StatusInternalServerError)
+	//			fmt.Fprintln(w, "Error while Parsing Token!")
+	//			log.Printf("ValidationError error: %+v\n", vErr.Errors)
+	//			return
+	//		}
+	//	default: // something else went wrong
+	//		w.WriteHeader(http.StatusInternalServerError)
+	//		fmt.Fprintln(w, "Error while Parsing Token!")
+	//		log.Printf("Token parse error: %v\n", err)
+	//		return
+	//	}
+	//}
 
 
 	if token.Valid {
@@ -153,9 +162,25 @@ func jsonResponse(response interface{}, w http.ResponseWriter) {
 	w.Write(json)
 }
 
+//func keyLookupFunc(token *jwt.Token) (interface{}, error) {
+//	// since we only use one private key to sign the tokens,
+//	// we also only use its public counter part to verify
+//	return verifyKey, nil
+//}
+
 func keyLookupFunc(token *jwt.Token) (interface{}, error) {
-	// since we only use one private key to sign the tokens,
-	// we also only use its public counter part to verify
-	return verifyKey, nil
+	// Don't forget to validate the alg is what you expect:
+	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	}
+
+	// Look up key
+	key, err := lookupPublicKey(token.Header["kid"])
+	if err != nil {
+		return nil, err
+	}
+
+	// Unpack key from PEM encoded PKCS8
+	return jwt.ParseRSAPublicKeyFromPEM(key)
 }
 
