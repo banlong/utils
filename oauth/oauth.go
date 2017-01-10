@@ -10,7 +10,6 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/gorilla/mux"
-	"go/token"
 )
 // using asymmetric crypto/RSA keys
 // location of the files used for signing and verification
